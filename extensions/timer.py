@@ -4,6 +4,7 @@ from daug.utils.dpyexcept import excepter
 import asyncio
 import re
 import time
+from utils.ops_log import emit_message_command_error
 
 seconds_pattern = re.compile(r'\d+秒')
 minutes_pattern = re.compile(r'\d+分')
@@ -18,6 +19,13 @@ class TimerCog(commands.Cog):
     @commands.Cog.listener()
     @excepter
     async def on_message(self, message: discord.Message):
+        try:
+            await self._handle_timer_message(message)
+        except Exception as error:
+            await emit_message_command_error(message, error)
+            raise
+
+    async def _handle_timer_message(self, message: discord.Message):
         if message.author.bot:
             return
         if seconds_pattern.fullmatch(message.content):
